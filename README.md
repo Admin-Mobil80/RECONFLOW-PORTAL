@@ -5,10 +5,13 @@ TypeScript SPA. ReconFlow has no separate landing-page repo by design.
 
 Part of the [WingTheIdea](https://github.com/Admin-Mobil80) group.
 
+Served at **https://reconflow.wingtheidea.com**.
+
 ## Stack
 
 - Vite 7, React 19, TypeScript, React Router (client-side routing)
-- Builds to `dist/`, hosted from a private S3 bucket behind CloudFront (OAC)
+- Builds to `dist/`, hosted from a folder of the shared private bucket
+  `wingtheidea-webapps-231427841372` behind CloudFront (OAC)
 
 ## Local development
 
