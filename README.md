@@ -1,19 +1,35 @@
 # ReconFlow — Portal
 
-Customer-facing portal for ReconFlow. **This repo also contains ReconFlow's public landing page** — ReconFlow has no separate LANDINGPAGE repo by design.
+Public landing page **and** customer portal for ReconFlow, in one Vite + React +
+TypeScript SPA. ReconFlow has no separate landing-page repo by design.
 
 Part of the [WingTheIdea](https://github.com/Admin-Mobil80) group.
 
-## Status
+## Stack
 
-Scaffold only — no application code yet.
+- Vite 7, React 19, TypeScript, React Router (client-side routing)
+- Builds to `dist/`, hosted from a private S3 bucket behind CloudFront (OAC)
 
-## AWS
-
-Resources live in the shared account `231427841372`. Authenticate with:
+## Local development
 
 ```bash
-aws sso login --profile wingtheidea
+npm ci
+npm run dev        # http://localhost:5173
+npm test           # tsc --noEmit
+npm run build      # -> dist/
 ```
 
-Always pass `--profile wingtheidea`; resources are co-tenant with other products, so prefix anything created here with `reconflow-portal-`.
+## Routes
+
+| Path | Contents |
+| --- | --- |
+| `/` | Public landing page (placeholder copy) |
+| `/app` | Portal shell — no auth yet |
+| anything else | In-app 404 |
+
+## Deploying
+
+Push to `main`. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — infrastructure
+comes from the `reconflow-portal` CDK stack in
+[RECONFLOW-BACKEND](https://github.com/Admin-Mobil80/RECONFLOW-BACKEND), never
+from the console.
