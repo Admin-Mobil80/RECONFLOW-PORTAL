@@ -58,8 +58,24 @@ aws cloudformation describe-stacks --stack-name reconflow-portal \
 | `AWS_REGION` | no | — | Defaults to `ap-south-1` |
 | `BUILD_DIR` | no | — | Defaults to `dist`, which is what Vite emits |
 
-Until `AWS_DEPLOY_ROLE_ARN`, `S3_BUCKET` and `S3_PREFIX` are all set, the
-deploy job **skips** with a notice instead of failing, so `main` stays green.
+If `AWS_DEPLOY_ROLE_ARN`, `S3_BUCKET` or `S3_PREFIX` is missing the deploy job
+**fails** and names it; a skipped job would show green and look like a
+successful deploy.
+
+### Sign-in configuration (optional)
+
+Sign-in is passwordless: an email address, then a six-digit code sent to it
+by Cognito's custom auth flow. The Cognito pool and client ids are baked into
+the bundle at build time and **default to production** in
+`src/auth/AuthContext.tsx`, so nothing needs setting for a normal deploy.
+To point a build elsewhere, set these (Variables or Secrets):
+
+| Variable | Purpose |
+| --- | --- |
+| `VITE_COGNITO_USER_POOL_ID` | Another user pool |
+| `VITE_COGNITO_CLIENT_ID` | Another portal app client |
+| `VITE_AWS_REGION` | The pool's region (default `ap-south-1`) |
+| `VITE_AUTH_MOCK` | `1` builds with the mock client: any six-digit code signs in. Never for production. |
 
 ## Caching
 
