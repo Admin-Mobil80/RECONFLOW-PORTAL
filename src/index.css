@@ -404,6 +404,83 @@ p {
   border: 1px solid color-mix(in srgb, crimson 35%, var(--bg));
   font-size: 0.9rem;
 }
+ul.form-error {
+  padding-left: 1.6rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+/* --- contact form ------------------------------------------------------- */
+
+.contact-form {
+  max-width: 44rem;
+}
+
+.contact-grid {
+  display: grid;
+  gap: 0 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+
+.field em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--fg-faint);
+}
+
+.field textarea {
+  width: 100%;
+  padding: 0.62rem 0.75rem;
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  resize: vertical;
+}
+.field textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.field ::placeholder {
+  color: var(--fg-faint);
+}
+
+/* Honeypot: off-canvas rather than display:none, so naive bots still "see" it. */
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.contact-note {
+  font-size: 0.86rem;
+  color: var(--fg-faint);
+}
+
+.contact-done {
+  max-width: 44rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+}
+.contact-done p {
+  margin-top: 0.4rem;
+  color: var(--fg-muted);
+}
 
 .note {
   margin-top: 1.4rem;

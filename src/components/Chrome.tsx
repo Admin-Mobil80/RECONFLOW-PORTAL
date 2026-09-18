@@ -31,6 +31,7 @@ export function SiteHeader({ showSignIn = true }: { showSignIn?: boolean }) {
           <a className="nav-hide-sm" href="/#interfaces">
             Interfaces
           </a>
+          <a href="/#contact">Contact</a>
           {showSignIn && (
             <Link className="btn btn-primary" to="/signin">
               Sign in

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { SiteHeader, SiteFooter } from "../components/Chrome";
+import ContactForm from "../components/ContactForm";
 
 const STEPS = [
   {
@@ -182,6 +183,20 @@ export default function Landing() {
                 </span>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="section" id="contact">
+          <div className="wrap">
+            <div className="section-head">
+              <h2>Talk to us about your landscape</h2>
+              <p>
+                Tell us which systems hold the data and what gets reconciled
+                between them. We&rsquo;ll come back with how ReconFlow would sit
+                on top of them — and whether it should.
+              </p>
+            </div>
+            <ContactForm />
           </div>
         </section>
 
