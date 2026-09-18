@@ -33,7 +33,7 @@ export default function AppLayout() {
           </span>
           <div className="who">
             <span>
-              {session.email} · {session.organisation}
+              {session.email} · {session.organisationId}
             </span>
             <button className="linklike" onClick={() => void signOut()}>
               Sign out

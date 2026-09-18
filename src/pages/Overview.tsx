@@ -9,7 +9,7 @@ export default function Overview() {
       <div className="page-head">
         <h2>Overview</h2>
         <p>
-          Signed in to {session?.organisation}. Reconciliation workspaces are
+          Signed in to {session?.organisationId}. Reconciliation workspaces are
           not built yet — this is the shell they will sit in.
         </p>
       </div>

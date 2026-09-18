@@ -7,18 +7,40 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { mockAuth, type AuthClient, type Session } from "./auth";
+import { mockAuth, type AuthClient, type PendingSignIn, type Session } from "./auth";
+import { cognitoAuth } from "./cognito";
 
-// The single place that picks an implementation. Swapping to Cognito is a
-// change to this line.
-const client: AuthClient = mockAuth;
+/**
+ * The portal's Cognito app client. A public client id in a public bundle is
+ * normal - it is not a secret - and defaulting it here means a deploy needs
+ * no extra configuration. Repository variables override it for another
+ * environment; leaving VITE_COGNITO_CLIENT_ID empty selects the mock.
+ */
+const DEFAULT_COGNITO = {
+  region: "ap-south-1",
+  userPoolId: "ap-south-1_iZnjxun9V",
+  clientId: "7ab3gf7fm9domq3ibji7oj7re3",
+};
+
+function chooseClient(): AuthClient {
+  const env = import.meta.env;
+  if (env.VITE_AUTH_MOCK === "1") return mockAuth;
+  return cognitoAuth({
+    region: env.VITE_AWS_REGION || DEFAULT_COGNITO.region,
+    userPoolId: env.VITE_COGNITO_USER_POOL_ID || DEFAULT_COGNITO.userPoolId,
+    clientId: env.VITE_COGNITO_CLIENT_ID || DEFAULT_COGNITO.clientId,
+  });
+}
+
+const client = chooseClient();
 
 interface AuthState {
   session: Session | null;
   /** True until the stored session has been read, so routes do not flash. */
   loading: boolean;
   isMock: boolean;
-  signIn(email: string, password: string): Promise<void>;
+  requestCode(email: string): Promise<PendingSignIn>;
+  submitCode(pending: PendingSignIn, code: string): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -43,8 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    setSession(await client.signIn(email, password));
+  const requestCode = useCallback((email: string) => client.requestCode(email), []);
+
+  const submitCode = useCallback(async (pending: PendingSignIn, code: string) => {
+    setSession(await client.submitCode(pending, code));
   }, []);
 
   const signOut = useCallback(async () => {
@@ -53,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthState>(
-    () => ({ session, loading, isMock: client.isMock, signIn, signOut }),
-    [session, loading, signIn, signOut],
+    () => ({ session, loading, isMock: client.isMock, requestCode, submitCode, signOut }),
+    [session, loading, requestCode, submitCode, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

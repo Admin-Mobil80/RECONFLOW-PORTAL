@@ -1,63 +1,98 @@
 /**
  * Authentication seam.
  *
- * ReconFlow accounts are provisioned from the BMS — there is no sign-up path
- * anywhere in this app, by design.
+ * Sign-in is passwordless everywhere: an email address, then a one-time code
+ * sent to it. There is no sign-up path in this app — accounts are provisioned
+ * from the BMS.
  *
- * Cognito is not wired up yet, so `mockAuth` stands in. Everything outside this
- * folder talks to the `AuthClient` interface, so swapping in Cognito means
- * writing one more implementation of it and changing the line in
- * AuthContext.tsx that picks the client — no page or component changes.
+ * Everything outside this folder talks to `AuthClient`. `cognitoAuth`
+ * (cognito.ts) is the real implementation; `mockAuth` stands in when no
+ * Cognito configuration is present, and says so on every signed-in screen.
  */
+
+export type UserRole = "root" | "owner" | "administrator" | "reviewer";
 
 export interface Session {
   readonly email: string;
-  readonly organisation: string;
-  /** Only administrators may enable or disable interfaces. */
+  readonly name?: string;
+  readonly organisationId: string;
+  readonly role: UserRole;
+  /** Owners and administrators manage interfaces and users. */
   readonly isAdministrator: boolean;
+  /** ISO timestamp after which the session must be refreshed or re-established. */
+  readonly expiresAt?: string;
+}
+
+/** Step one of sign-in succeeded; a code is on its way. Opaque to the UI. */
+export interface PendingSignIn {
+  readonly email: string;
+  readonly challengeSession: string;
+  /** Masked address the code went to, as the provider reports it. */
+  readonly destination?: string;
+  /** The provider's own identifier for the user, when it differs from the email. */
+  readonly username?: string;
 }
 
 export interface AuthClient {
-  /** Returns the persisted session, or null when signed out. */
-  restore(): Promise<Session | null>;
-  signIn(email: string, password: string): Promise<Session>;
-  signOut(): Promise<void>;
   /** True while no real identity provider is connected. */
   readonly isMock: boolean;
+  /** Returns the persisted session, refreshing it if needed, or null when signed out. */
+  restore(): Promise<Session | null>;
+  /** Sends a one-time code to the address. */
+  requestCode(email: string): Promise<PendingSignIn>;
+  /** Exchanges the code for a session. */
+  submitCode(pending: PendingSignIn, code: string): Promise<Session>;
+  signOut(): Promise<void>;
 }
 
-export class AuthError extends Error {}
+export class AuthError extends Error {
+  /**
+   * Set when the attempt failed but the provider kept the sign-in alive under
+   * a new challenge (a wrong code, for instance): the UI must carry on with
+   * this in place of the previous PendingSignIn.
+   */
+  readonly retryWith?: PendingSignIn;
 
-const STORAGE_KEY = "reconflow.session";
+  constructor(message: string, retryWith?: PendingSignIn) {
+    super(message);
+    this.retryWith = retryWith;
+  }
+}
+
+export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function isAdministrator(role: UserRole): boolean {
+  return role === "owner" || role === "administrator" || role === "root";
+}
+
+export function maskEmail(email: string): string {
+  const [local, domain = ""] = email.split("@");
+  return `${local.slice(0, 1)}***@${domain.slice(0, 1)}***`;
+}
+
+// --- mock -----------------------------------------------------------------------
+
+const MOCK_KEY = "reconflow.mock-session";
 
 function readStored(): Session | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(MOCK_KEY);
     return raw ? (JSON.parse(raw) as Session) : null;
   } catch {
-    // Private browsing, cleared site data, or blocked storage: treat as signed
-    // out rather than breaking the app.
     return null;
   }
 }
 
 function writeStored(session: Session | null): void {
   try {
-    if (session) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    } else {
-      window.localStorage.removeItem(STORAGE_KEY);
-    }
+    if (session) window.localStorage.setItem(MOCK_KEY, JSON.stringify(session));
+    else window.localStorage.removeItem(MOCK_KEY);
   } catch {
     // Non-fatal: the session simply will not survive a reload.
   }
 }
 
-/**
- * Stand-in for Cognito. It validates the shape of what is typed and nothing
- * else — no credential is actually checked, which is why every signed-in screen
- * shows a banner saying so.
- */
+/** Accepts any well-formed email and any six-digit code. Never for production. */
 export const mockAuth: AuthClient = {
   isMock: true,
 
@@ -65,22 +100,19 @@ export const mockAuth: AuthClient = {
     return readStored();
   },
 
-  async signIn(email, password) {
+  async requestCode(email) {
     const trimmed = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      throw new AuthError("Enter a valid work email address.");
-    }
-    if (password.length < 8) {
-      throw new AuthError("Password must be at least 8 characters.");
-    }
+    if (!EMAIL_RE.test(trimmed)) throw new AuthError("Enter a valid work email address.");
+    return { email: trimmed, challengeSession: "mock", destination: maskEmail(trimmed) };
+  },
 
-    const domain = trimmed.slice(trimmed.indexOf("@") + 1);
+  async submitCode(pending, code) {
+    if (!/^\d{6}$/.test(code.trim())) throw new AuthError("Enter the six-digit code from the email.");
+    const domain = pending.email.slice(pending.email.indexOf("@") + 1);
     const session: Session = {
-      email: trimmed,
-      // Real sessions will carry the organisation from the token; deriving it
-      // from the email domain keeps the mock plausible without inventing a
-      // directory.
-      organisation: domain.split(".")[0].replace(/^./, (c) => c.toUpperCase()),
+      email: pending.email,
+      organisationId: domain.split(".")[0],
+      role: "administrator",
       isAdministrator: true,
     };
     writeStored(session);

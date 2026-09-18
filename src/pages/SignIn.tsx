@@ -1,39 +1,72 @@
 import { useState, type FormEvent } from "react";
-import { useLocation, useNavigate, Navigate } from "react-router-dom";
-import { SiteHeader } from "../components/Chrome";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { AuthError, type PendingSignIn } from "../auth/auth";
 import { useAuth } from "../auth/AuthContext";
-import { AuthError } from "../auth/auth";
+import { SiteHeader } from "../components/Chrome";
 
+/**
+ * Two steps, no password: an email address, then the code sent to it.
+ */
 export default function SignIn() {
-  const { session, signIn, isMock, loading } = useAuth();
+  const { session, loading, isMock, requestCode, submitCode } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [pending, setPending] = useState<PendingSignIn | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [resent, setResent] = useState(false);
 
   // Where the user was headed before being bounced here.
   const from = (location.state as { from?: string } | null)?.from ?? "/app";
 
   if (!loading && session) return <Navigate to={from} replace />;
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function run(action: () => Promise<void>, fallback: string) {
     setError(null);
-    setSubmitting(true);
+    setBusy(true);
     try {
-      await signIn(email, password);
-      navigate(from, { replace: true });
+      await action();
     } catch (cause) {
-      setError(
-        cause instanceof AuthError
-          ? cause.message
-          : "Could not sign in. Try again.",
-      );
+      if (cause instanceof AuthError) {
+        setError(cause.message);
+        // A wrong code leaves the sign-in alive under a new challenge session;
+        // the next attempt has to answer that one.
+        if (cause.retryWith) setPending(cause.retryWith);
+      } else {
+        setError(fallback);
+      }
     } finally {
-      setSubmitting(false);
+      setBusy(false);
     }
+  }
+
+  function handleEmail(event: FormEvent) {
+    event.preventDefault();
+    void run(async () => {
+      setPending(await requestCode(email));
+      setCode("");
+      setResent(false);
+    }, "Could not send a code. Try again.");
+  }
+
+  function handleCode(event: FormEvent) {
+    event.preventDefault();
+    if (!pending) return;
+    void run(async () => {
+      await submitCode(pending, code);
+      navigate(from, { replace: true });
+    }, "Could not sign in. Try again.");
+  }
+
+  function resend() {
+    if (!pending) return;
+    void run(async () => {
+      setPending(await requestCode(pending.email));
+      setCode("");
+      setResent(true);
+    }, "Could not send a new code. Try again.");
   }
 
   return (
@@ -41,62 +74,101 @@ export default function SignIn() {
       <SiteHeader showSignIn={false} />
       <main className="auth-main">
         <div className="auth-card">
-          <h1>Sign in</h1>
-          <p className="sub">Continue to your organisation&rsquo;s workspace.</p>
+          {!pending ? (
+            <>
+              <h1>Sign in</h1>
+              <p className="sub">We&rsquo;ll email you a six-digit code. No password needed.</p>
 
-          <form onSubmit={handleSubmit} noValidate>
-            <label className="field">
-              <span>Work email</span>
-              <input
-                type="email"
-                name="email"
-                autoComplete="username"
-                autoFocus
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-              />
-            </label>
+              <form onSubmit={handleEmail} noValidate>
+                <label className="field">
+                  <span>Work email</span>
+                  <input
+                    type="email"
+                    name="email"
+                    autoComplete="username"
+                    autoFocus
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    required
+                  />
+                </label>
 
-            <label className="field">
-              <span>Password</span>
-              <input
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </label>
+                {error && (
+                  <p className="form-error" role="alert">
+                    {error}
+                  </p>
+                )}
 
-            {error && (
-              <p className="form-error" role="alert">
-                {error}
+                <div style={{ marginTop: "1.5rem" }}>
+                  <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
+                    {busy ? "Sending code…" : "Email me a code"}
+                  </button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <>
+              <h1>Check your email</h1>
+              <p className="sub">
+                We sent a six-digit code to <b>{pending.destination ?? pending.email}</b>. Enter it below.
+                {resent && " A new code is on its way."}
               </p>
-            )}
 
-            <div style={{ marginTop: "1.5rem" }}>
-              <button
-                className="btn btn-primary btn-block"
-                type="submit"
-                disabled={submitting}
-              >
-                {submitting ? "Signing in…" : "Sign in"}
-              </button>
-            </div>
-          </form>
+              <form onSubmit={handleCode} noValidate>
+                <label className="field">
+                  <span>One-time code</span>
+                  <input
+                    type="text"
+                    name="code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]*"
+                    autoFocus
+                    value={code}
+                    onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
+                    required
+                  />
+                </label>
+
+                {error && (
+                  <p className="form-error" role="alert">
+                    {error}
+                  </p>
+                )}
+
+                <div style={{ marginTop: "1.5rem" }}>
+                  <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
+                    {busy ? "Signing in…" : "Sign in"}
+                  </button>
+                </div>
+              </form>
+
+              <p className="note" style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                <button className="linklike" type="button" onClick={resend} disabled={busy}>
+                  Send a new code
+                </button>
+                <button
+                  className="linklike"
+                  type="button"
+                  onClick={() => {
+                    setPending(null);
+                    setError(null);
+                  }}
+                  disabled={busy}
+                >
+                  Use a different email
+                </button>
+              </p>
+            </>
+          )}
 
           <p className="note">
-            ReconFlow accounts are created for your organisation by an
-            administrator. There is no self-service sign-up.
+            ReconFlow accounts are created for your organisation by an administrator. There is
+            no self-service sign-up.
             {isMock && (
               <>
                 {" "}
-                <b>
-                  Authentication is not connected yet — no credentials are
-                  checked.
-                </b>
+                <b>Authentication is not connected — any six-digit code is accepted.</b>
               </>
             )}
           </p>
