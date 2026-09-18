@@ -3,6 +3,17 @@ import { useState, type FormEvent } from "react";
 type Status = "idle" | "sending" | "sent" | "failed";
 
 /**
+ * CloudFront signs requests to the enquiry function with Origin Access
+ * Control, and for POST that signature covers the body — so the request must
+ * carry the body's SHA-256 in x-amz-content-sha256, or the function rejects
+ * it with 403 and the SPA rewrite turns that into a blank success page.
+ */
+async function sha256Hex(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+/**
  * Posts same-origin to /api/contact, which CloudFront routes to the enquiry
  * function. Field names match what that function validates.
  */
@@ -18,10 +29,14 @@ export default function ContactForm() {
     setStatus("sending");
     setErrors([]);
     try {
+      const payload = JSON.stringify(data);
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(data),
+        headers: {
+          "content-type": "application/json",
+          "x-amz-content-sha256": await sha256Hex(payload),
+        },
+        body: payload,
       });
       const body = (await response.json().catch(() => ({}))) as { ok?: boolean; errors?: string[] };
       if (response.ok && body.ok) {
