@@ -9,8 +9,8 @@ export default function Overview() {
       <div className="page-head">
         <h2>Overview</h2>
         <p>
-          Signed in to {session?.organisationId}. Reconciliation workspaces are
-          not built yet — this is the shell they will sit in.
+          Signed in to {session?.organisationId}. Cases are assessed from your
+          connected systems each time you open them; every decision is yours.
         </p>
       </div>
 
@@ -26,10 +26,13 @@ export default function Overview() {
         </article>
 
         <article className="card">
-          <h3>Review discrepancies</h3>
+          <h3>Review cases</h3>
           <p>
-            Flagged items will appear here with the records compared, the fields
-            that differ and why they were surfaced.
+            Each refund case with its readiness, recommended classification,
+            exceptions and the evidence behind them.
+          </p>
+          <p style={{ marginTop: "0.9rem" }}>
+            <Link to="/app/cases">Open the case list →</Link>
           </p>
         </article>
 

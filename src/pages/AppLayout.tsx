@@ -47,6 +47,7 @@ export default function AppLayout() {
           <NavLink to="/app" end>
             Overview
           </NavLink>
+          <NavLink to="/app/cases">Cases</NavLink>
           {session.isAdministrator && (
             <NavLink to="/app/interfaces">Interfaces</NavLink>
           )}

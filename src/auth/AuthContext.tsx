@@ -42,9 +42,20 @@ interface AuthState {
   requestCode(email: string): Promise<PendingSignIn>;
   submitCode(pending: PendingSignIn, code: string): Promise<void>;
   signOut(): Promise<void>;
+  /** The signed-in user's ID token, for calls to the portal API. */
+  idToken(): string | null;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
+
+function readIdToken(): string | null {
+  try {
+    const raw = window.localStorage.getItem("reconflow.tokens");
+    return raw ? ((JSON.parse(raw) as { idToken?: string }).idToken ?? null) : null;
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -76,9 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
   }, []);
 
+  const idToken = useCallback(() => (client.isMock ? "mock" : readIdToken()), []);
+
   const value = useMemo<AuthState>(
-    () => ({ session, loading, isMock: client.isMock, requestCode, submitCode, signOut }),
-    [session, loading, requestCode, submitCode, signOut],
+    () => ({ session, loading, isMock: client.isMock, requestCode, submitCode, signOut, idToken }),
+    [session, loading, requestCode, submitCode, signOut, idToken],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

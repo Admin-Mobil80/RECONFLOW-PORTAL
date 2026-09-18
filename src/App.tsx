@@ -1,6 +1,8 @@
 import { Link, Route, Routes } from "react-router-dom";
 import { SiteHeader } from "./components/Chrome";
 import AppLayout from "./pages/AppLayout";
+import CaseDetail from "./pages/CaseDetail";
+import Cases from "./pages/Cases";
 import Interfaces from "./pages/Interfaces";
 import Landing from "./pages/Landing";
 import Overview from "./pages/Overview";
@@ -30,6 +32,8 @@ export default function App() {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<Overview />} />
+        <Route path="cases" element={<Cases />} />
+        <Route path="cases/:caseId" element={<CaseDetail />} />
         <Route path="interfaces" element={<Interfaces />} />
       </Route>
       <Route path="*" element={<NotFound />} />
