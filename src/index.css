@@ -396,6 +396,38 @@ p {
   border-color: transparent;
 }
 
+/* --- one-time code ------------------------------------------------------ */
+
+.code-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
+}
+.code-input input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 3.4rem;
+  padding: 0;
+  text-align: center;
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  caret-color: var(--accent);
+}
+.code-input input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+.code-input input:disabled {
+  opacity: 0.6;
+}
+
 .form-error {
   margin-top: 1rem;
   padding: 0.65rem 0.8rem;

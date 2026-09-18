@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AuthError, type PendingSignIn } from "../auth/auth";
 import { useAuth } from "../auth/AuthContext";
 import { SiteHeader } from "../components/Chrome";
+import CodeInput from "../components/CodeInput";
 
 /**
  * Two steps, no password: an email address, then the code sent to it.
@@ -51,13 +52,17 @@ export default function SignIn() {
     }, "Could not send a code. Try again.");
   }
 
-  function handleCode(event: FormEvent) {
-    event.preventDefault();
-    if (!pending) return;
+  function submit(value: string) {
+    if (!pending || busy) return;
     void run(async () => {
-      await submitCode(pending, code);
+      await submitCode(pending, value);
       navigate(from, { replace: true });
     }, "Could not sign in. Try again.");
+  }
+
+  function handleCode(event: FormEvent) {
+    event.preventDefault();
+    submit(code);
   }
 
   function resend() {
@@ -115,20 +120,7 @@ export default function SignIn() {
               </p>
 
               <form onSubmit={handleCode} noValidate>
-                <label className="field">
-                  <span>One-time code</span>
-                  <input
-                    type="text"
-                    name="code"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="[0-9]*"
-                    autoFocus
-                    value={code}
-                    onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
-                    required
-                  />
-                </label>
+                <CodeInput value={code} onChange={setCode} onComplete={submit} autoFocus disabled={busy} />
 
                 {error && (
                   <p className="form-error" role="alert">
