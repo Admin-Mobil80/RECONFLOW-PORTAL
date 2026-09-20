@@ -773,6 +773,30 @@ ul.form-error {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Fits its container whatever the width: fixed columns, and text columns
+   take a second line rather than pushing the table sideways. */
+.table.dense.fit {
+  table-layout: fixed;
+  width: 100%;
+}
+.table.dense.fit td {
+  overflow: hidden;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+.table.dense .l1 {
+  line-height: 1.35;
+}
+.table.dense .l2 {
+  line-height: 1.3;
+  font-size: 0.78rem;
+  color: var(--fg-faint);
+}
+.table.dense .clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .table.dense tbody tr.row-link {
   cursor: pointer;
 }

@@ -6,9 +6,10 @@ import { useAuth } from "../auth/AuthContext";
 type ReadinessFilter = "all" | "ready" | "not-ready";
 
 /**
- * One line per case, no wrapping: the point of the list is to scan many
- * cases at once. Long text is clipped with an ellipsis and shown in full on
- * hover; the detail page has everything.
+ * Two short lines per case and six columns, so the list fits any desktop
+ * width without scrolling sideways and still shows twenty-odd cases on a
+ * screen. Long text is clipped with an ellipsis and shown in full on hover;
+ * the detail page has everything.
  */
 export default function Cases() {
   const { idToken } = useAuth();
@@ -116,21 +117,23 @@ export default function Cases() {
           </div>
 
           <div className="table-wrap">
-            <table className="table dense">
+            <table className="table dense fit">
+              <colgroup>
+                <col style={{ width: "12%" }} />
+                <col style={{ width: "26%" }} />
+                <col style={{ width: "13%" }} />
+                <col style={{ width: "15%" }} />
+                <col style={{ width: "21%" }} />
+                <col style={{ width: "13%" }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Case</th>
-                  <th>Issued</th>
                   <th>Supplier</th>
-                  <th>Reason</th>
                   <th className="num">Amount</th>
-                  <th>Readiness</th>
+                  <th>Readiness · stage</th>
                   <th>Classification</th>
-                  <th className="num">Conf.</th>
-                  <th>Exceptions</th>
-                  <th>Stage</th>
-                  <th className="num">Days</th>
-                  <th>Decision</th>
+                  <th>Exceptions · decision</th>
                 </tr>
               </thead>
               <tbody>
@@ -139,48 +142,61 @@ export default function Cases() {
                   return (
                     <tr key={c.caseId} className="row-link" onClick={() => navigate(href)}>
                       <td>
-                        <Link to={href} onClick={(e) => e.stopPropagation()}>
-                          <b>{c.caseId}</b>
-                        </Link>
-                      </td>
-                      <td className="muted">{day(c.issuedDate)}</td>
-                      <td className="clip" title={c.supplier}>
-                        {c.supplier}
-                      </td>
-                      <td className="clip muted" title={c.reason}>
-                        {c.reason}
-                      </td>
-                      <td className="num" title={c.amountInBase ? `≈ ${money(c.amountInBase)}` : undefined}>
-                        {money(c.amount)}
-                        {c.amountInBase && c.amountInBase.currency !== c.amount.currency && (
-                          <span className="muted"> ≈ {money(c.amountInBase)}</span>
-                        )}
+                        <div className="l1">
+                          <Link to={href} onClick={(e) => e.stopPropagation()}>
+                            <b>{c.caseId}</b>
+                          </Link>
+                        </div>
+                        <div className="l2">issued {day(c.issuedDate)}</div>
                       </td>
                       <td>
-                        <span className={`pill pill-sm ${c.readiness === "ready" ? "pill-ok" : "pill-warn"}`}>
-                          {c.readiness === "ready" ? "Ready" : "Not ready"}
-                        </span>
+                        <div className="l1 clip" title={c.supplier}>
+                          {c.supplier}
+                        </div>
+                        <div className="l2 clip" title={c.reason}>
+                          {c.reason}
+                        </div>
                       </td>
-                      <td>{c.classificationLabel}</td>
-                      <td className="num muted">{c.confidence}%</td>
+                      <td className="num">
+                        <div className="l1">{money(c.amount)}</div>
+                        <div className="l2">
+                          {c.amountInBase && c.amountInBase.currency !== c.amount.currency ? `≈ ${money(c.amountInBase)}` : "\u00a0"}
+                        </div>
+                      </td>
                       <td>
-                        {c.exceptions === 0 ? (
-                          <span className="muted">—</span>
-                        ) : c.blockingExceptions > 0 ? (
-                          <span className="pill pill-sm pill-bad">
-                            {c.blockingExceptions} blocking{c.exceptions > c.blockingExceptions ? ` +${c.exceptions - c.blockingExceptions}` : ""}
+                        <div className="l1">
+                          <span className={`pill pill-sm ${c.readiness === "ready" ? "pill-ok" : "pill-warn"}`}>
+                            {c.readiness === "ready" ? "Ready" : "Not ready"}
                           </span>
-                        ) : (
-                          <span className="pill pill-sm pill-warn">{c.exceptions}</span>
-                        )}
+                        </div>
+                        <div className={`l2 clip ${c.stale ? "stale" : ""}`} title={c.stageLabel}>
+                          {c.stageLabel} · {c.businessDaysInStage}d{c.stale && " · stale"}
+                        </div>
                       </td>
-                      <td>{c.stageLabel}</td>
-                      <td className={`num ${c.stale ? "stale" : "muted"}`} title={c.stale ? "Stale" : undefined}>
-                        {c.businessDaysInStage}
-                        {c.stale && " !"}
+                      <td>
+                        <div className="l1 clip" title={c.classificationLabel}>
+                          {c.classificationLabel}
+                        </div>
+                        <div className="l2">{c.confidence}% confidence</div>
                       </td>
-                      <td className="clip" title={c.latestDecision ? `${c.latestDecision.decidedByName ?? c.latestDecision.decidedBy}, ${day(c.latestDecision.at)}` : undefined}>
-                        {c.latestDecision ? c.latestDecision.actionLabel : <span className="muted">awaiting</span>}
+                      <td>
+                        <div className="l1">
+                          {c.exceptions === 0 ? (
+                            <span className="muted">none</span>
+                          ) : c.blockingExceptions > 0 ? (
+                            <span className="pill pill-sm pill-bad" title={`${c.blockingExceptions} blocking of ${c.exceptions}`}>
+                              {c.blockingExceptions} blocking
+                            </span>
+                          ) : (
+                            <span className="pill pill-sm pill-warn">{c.exceptions} to note</span>
+                          )}
+                        </div>
+                        <div
+                          className="l2 clip"
+                          title={c.latestDecision ? `${c.latestDecision.decidedByName ?? c.latestDecision.decidedBy}, ${day(c.latestDecision.at)}` : undefined}
+                        >
+                          {c.latestDecision ? c.latestDecision.actionLabel : "awaiting decision"}
+                        </div>
                       </td>
                     </tr>
                   );
