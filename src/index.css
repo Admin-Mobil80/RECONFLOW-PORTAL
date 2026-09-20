@@ -708,6 +708,120 @@ ul.form-error {
   border: 0;
 }
 
+/* --- overview ------------------------------------------------------------ */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.tile {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.9rem 1rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+}
+a.tile:hover {
+  text-decoration: none;
+  border-color: var(--border-strong);
+}
+.tile-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.tile b {
+  font-size: 1.9rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.tile b.ok {
+  color: var(--ok);
+}
+.tile b.warn {
+  color: var(--warn-fg);
+}
+.tile b.bad {
+  color: #b4451f;
+}
+.tile-sub {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1rem;
+}
+.dash-grid .card h3 {
+  margin-bottom: 0.75rem;
+}
+
+/* One measure, one hue: bar length is the count, the number is in text ink. */
+.bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+/* Label and figures on one line, the bar on its own full-width line beneath -
+   the bar never fights the text for room. */
+.bars li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label value"
+    "track track";
+  align-items: center;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.88rem;
+}
+.bar-label {
+  grid-area: label;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-value {
+  grid-area: value;
+}
+.bar-track {
+  grid-area: track;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-sunken);
+  overflow: hidden;
+}
+.bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.bar-value {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.attention {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
 /* --- cases -------------------------------------------------------------- */
 
 /* Signed-in pages use the width they are given; the marketing column is too
