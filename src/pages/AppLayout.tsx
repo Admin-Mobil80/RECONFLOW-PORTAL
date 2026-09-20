@@ -26,7 +26,7 @@ export default function AppLayout() {
       )}
 
       <header className="site-header">
-        <div className="wrap">
+        <div className="wrap wrap-wide">
           <span className="brand">
             <BrandMark />
             ReconFlow
@@ -42,7 +42,7 @@ export default function AppLayout() {
         </div>
       </header>
 
-      <div className="wrap">
+      <div className="wrap wrap-wide">
         <nav className="app-nav">
           <NavLink to="/app" end>
             Overview
@@ -54,7 +54,7 @@ export default function AppLayout() {
         </nav>
       </div>
 
-      <main className="wrap">
+      <main className="wrap wrap-wide">
         <Outlet />
       </main>
     </>
