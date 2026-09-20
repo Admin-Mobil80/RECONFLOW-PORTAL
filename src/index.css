@@ -969,6 +969,9 @@ ul.form-error {
 .prose {
   color: var(--fg);
   line-height: 1.65;
+  /* The summary arrives with its own line breaks: one fact per line from the
+     deterministic narrator, short paragraphs from the model. */
+  white-space: pre-line;
 }
 .classification-label {
   font-size: 1.25rem;
