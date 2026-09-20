@@ -767,9 +767,6 @@ ul.form-error {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   background: var(--bg-sunken);
-  position: sticky;
-  top: 60px;
-  z-index: 1;
 }
 .table.dense td.clip {
   max-width: 16rem;
