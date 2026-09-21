@@ -171,3 +171,12 @@ export function money(m: Money): string {
 export function day(iso: string): string {
   return iso.slice(0, 10);
 }
+
+export interface OrganisationUser {
+  readonly email: string;
+  readonly name: string;
+  readonly role: "owner" | "administrator" | "reviewer";
+  readonly status: "active" | "disabled";
+  readonly createdAt: string;
+  readonly createdBy?: string;
+}

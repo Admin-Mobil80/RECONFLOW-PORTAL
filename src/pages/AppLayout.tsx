@@ -49,7 +49,10 @@ export default function AppLayout() {
           </NavLink>
           <NavLink to="/app/cases">Cases</NavLink>
           {session.isAdministrator && (
-            <NavLink to="/app/interfaces">Interfaces</NavLink>
+            <>
+              <NavLink to="/app/interfaces">Interfaces</NavLink>
+              <NavLink to="/app/users">Users</NavLink>
+            </>
           )}
         </nav>
       </div>

@@ -7,6 +7,7 @@ import Interfaces from "./pages/Interfaces";
 import Landing from "./pages/Landing";
 import Overview from "./pages/Overview";
 import SignIn from "./pages/SignIn";
+import Users from "./pages/Users";
 
 function NotFound() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="cases" element={<Cases />} />
         <Route path="cases/:caseId" element={<CaseDetail />} />
         <Route path="interfaces" element={<Interfaces />} />
+        <Route path="users" element={<Users />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

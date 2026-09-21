@@ -188,6 +188,23 @@ p {
 .btn-block {
   width: 100%;
 }
+.btn-sm {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.84rem;
+  border-radius: 8px;
+}
+.refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 
 /* --- landing ------------------------------------------------------------ */
 

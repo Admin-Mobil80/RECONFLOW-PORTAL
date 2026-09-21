@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api, ApiError, day, money, type CaseSummary } from "../api";
-import { useAuth } from "../auth/AuthContext";
+import { day, money } from "../api";
+import { RefreshControl, useCases } from "../hooks/useCases";
 
 type ReadinessFilter = "all" | "ready" | "not-ready";
 
@@ -12,28 +12,10 @@ type ReadinessFilter = "all" | "ready" | "not-ready";
  * the detail page has everything.
  */
 export default function Cases() {
-  const { idToken } = useAuth();
   const navigate = useNavigate();
-  const [cases, setCases] = useState<CaseSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { cases, assessedAt, loading, error, refresh } = useCases();
   const [readiness, setReadiness] = useState<ReadinessFilter>("all");
   const [stage, setStage] = useState<string>("all");
-
-  useEffect(() => {
-    let active = true;
-    api<{ cases: CaseSummary[] }>("/cases", idToken())
-      .then((result) => {
-        if (active) setCases(result.cases);
-      })
-      .catch((cause) => {
-        if (!active) return;
-        setCases([]);
-        setError(cause instanceof ApiError ? cause.message : "Could not load cases.");
-      });
-    return () => {
-      active = false;
-    };
-  }, [idToken]);
 
   const stages = useMemo(() => {
     const seen = new Map<string, string>();
@@ -113,6 +95,7 @@ export default function Cases() {
               <span className="count">
                 {visible.length} of {cases.length}
               </span>
+              <RefreshControl assessedAt={assessedAt} loading={loading} onRefresh={() => void refresh()} />
             </div>
           </div>
 

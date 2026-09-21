@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { api, ApiError, day, money, type CaseSummary, type Money } from "../api";
+import { day, money, type CaseSummary, type Money } from "../api";
 import { useAuth } from "../auth/AuthContext";
+import { RefreshControl, useCases } from "../hooks/useCases";
 
 function sum(cases: readonly CaseSummary[], currency: string): Money {
   return {
@@ -43,25 +44,8 @@ function Bars({ rows, currency }: { rows: { label: string; count: number; value:
 }
 
 export default function Overview() {
-  const { session, idToken } = useAuth();
-  const [cases, setCases] = useState<CaseSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    api<{ cases: CaseSummary[] }>("/cases", idToken())
-      .then((r) => {
-        if (active) setCases(r.cases);
-      })
-      .catch((cause) => {
-        if (!active) return;
-        setCases([]);
-        setError(cause instanceof ApiError ? cause.message : "Could not load cases.");
-      });
-    return () => {
-      active = false;
-    };
-  }, [idToken]);
+  const { session } = useAuth();
+  const { cases, assessedAt, loading, error, refresh } = useCases();
 
   const view = useMemo(() => {
     const all = cases ?? [];
@@ -96,12 +80,15 @@ export default function Overview() {
 
   return (
     <>
-      <div className="page-head compact">
-        <h2>Overview</h2>
-        <p>
-          {session?.organisationId?.toUpperCase()} · every case assessed just now from your connected systems.
-          Nothing has been applied anywhere; each case waits for a person.
-        </p>
+      <div className="page-head compact head-row">
+        <div>
+          <h2>Overview</h2>
+          <p>
+            {session?.organisationId?.toUpperCase()} · every case assessed from your connected systems. Nothing has
+            been applied anywhere; each case waits for a person.
+          </p>
+        </div>
+        <RefreshControl assessedAt={assessedAt} loading={loading} onRefresh={() => void refresh()} />
       </div>
 
       {error && (
