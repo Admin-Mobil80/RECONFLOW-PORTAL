@@ -179,4 +179,6 @@ export interface OrganisationUser {
   readonly status: "active" | "disabled";
   readonly createdAt: string;
   readonly createdBy?: string;
+  /** False when the account was created but its welcome email would not send. */
+  readonly notified?: boolean;
 }

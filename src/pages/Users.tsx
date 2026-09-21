@@ -71,7 +71,8 @@ export default function Users() {
         <h2>Users</h2>
         <p>
           People who can sign in to {session?.organisationId?.toUpperCase()}&rsquo;s ReconFlow. Administrators manage
-          interfaces and users; reviewers decide cases. A new user signs in straight away with an emailed code.
+          interfaces and users; reviewers decide cases. A new user is emailed a welcome note and signs in straight
+          away with a six-digit code.
         </p>
       </div>
 
@@ -102,7 +103,10 @@ export default function Users() {
           )}
           {created && (
             <p className="note" role="status">
-              Added <b>{created.name}</b> ({created.email}) as {ROLE_LABELS[created.role].toLowerCase()}. They can sign in now.
+              Added <b>{created.name}</b> ({created.email}) as {ROLE_LABELS[created.role].toLowerCase()}.{" "}
+              {created.notified === false
+                ? "The welcome email could not be sent — tell them directly that they have access."
+                : "They have been emailed and can sign in now."}
             </p>
           )}
           <div className="contact-actions">
