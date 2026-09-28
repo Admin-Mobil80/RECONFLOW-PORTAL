@@ -1280,3 +1280,39 @@ a.tile:hover {
 .history li:last-child {
   border-bottom: none;
 }
+
+/* How a recommendation divides - e.g. a cofinanced refund, fund by fund. */
+.breakdown {
+  margin-top: 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+.breakdown h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+.breakdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.breakdown td {
+  padding: 0.4rem 0;
+  border-top: 1px solid var(--border);
+  vertical-align: top;
+}
+.breakdown tr:first-child td {
+  border-top: 0;
+}
+.breakdown td.num {
+  text-align: right;
+  white-space: nowrap;
+  padding-left: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.breakdown > p {
+  margin-top: 0.5rem;
+}

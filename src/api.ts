@@ -123,6 +123,12 @@ export interface Assessment {
     readonly confidence: number;
     readonly rule: string;
     readonly signals: readonly ClassificationSignal[];
+    /** How the recommendation divides — for a cofinanced refund, the amount owed to each fund. */
+    readonly breakdown?: {
+      readonly title: string;
+      readonly basis?: string;
+      readonly lines: readonly { readonly label: string; readonly amount: Money; readonly percent?: number; readonly note?: string }[];
+    };
   };
   readonly exceptions: readonly CaseException[];
   readonly lifecycle: {

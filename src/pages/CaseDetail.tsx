@@ -199,6 +199,28 @@ export default function CaseDetail() {
             <p className="muted" style={{ marginTop: "0.75rem" }}>
               {a.classification.rule}
             </p>
+            {a.classification.breakdown && (
+              <div className="breakdown">
+                <h4>{a.classification.breakdown.title}</h4>
+                <table>
+                  <tbody>
+                    {a.classification.breakdown.lines.map((line) => (
+                      <tr key={line.label}>
+                        <td>
+                          <b>{line.label}</b>
+                          {line.note && <div className="muted small">{line.note}</div>}
+                        </td>
+                        <td className="num">{line.percent !== undefined ? `${line.percent}%` : ""}</td>
+                        <td className="num">
+                          <b>{money(line.amount)}</b>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {a.classification.breakdown.basis && <p className="muted small">{a.classification.breakdown.basis}</p>}
+              </div>
+            )}
             <ul className="checks compact">
               {a.classification.signals.map((s) => (
                 <li key={s.id} className={s.satisfied ? "pass" : "fail"}>
